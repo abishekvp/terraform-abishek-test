@@ -21,10 +21,7 @@ type SecurdenDataSource struct {
 }
 
 type SecurdenDataSourceModel struct {
-	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
-	KeyField types.String `tfsdk:"key_field"`
-	KeyValue types.String `tfsdk:"key_value"`
 }
 
 func (d *SecurdenDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -36,22 +33,9 @@ func (d *SecurdenDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 		MarkdownDescription: "Securden data source",
 
 		Attributes: map[string]schema.Attribute{
-			"username": schema.StringAttribute{
-				MarkdownDescription: "ID of the account",
-				Optional:            true,
-				Computed:            true,
-			},
 			"password": schema.StringAttribute{
 				MarkdownDescription: "Name of the account",
 				Optional:            true,
-				Computed:            true,
-			},
-			"key_field": schema.StringAttribute{
-				MarkdownDescription: "Key field for the required field",
-				Optional:            true,
-			},
-			"key_value": schema.StringAttribute{
-				MarkdownDescription: "Key value of the required field",
 				Computed:            true,
 			},
 		},
@@ -74,12 +58,10 @@ func (d *SecurdenDataSource) Configure(ctx context.Context, req datasource.Confi
 }
 
 func (d *SecurdenDataSource) Create(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var account SecurdenDataSourceModel
+	var account securdenProviderModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &account)...)
-	username := account.Username.ValueString()
-	password := account.Password.ValueString()
-	key_field := account.KeyField.ValueString()
-	data, code, message := get_account(ctx, username, password, key_field)
+	accountid := account.AccountID.ValueString()
+	data, code, message := get_account(ctx, accountid)
 	if code != 200 {
 		resp.Diagnostics.AddError(fmt.Sprintf("%d - %s", code, message), "")
 		return
@@ -88,12 +70,10 @@ func (d *SecurdenDataSource) Create(ctx context.Context, req datasource.ReadRequ
 }
 
 func (d *SecurdenDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var account SecurdenDataSourceModel
+	var account securdenProviderModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &account)...)
-	username := account.Username.ValueString()
-	password := account.Password.ValueString()
-	key_field := account.KeyField.ValueString()
-	data, code, message := get_account(ctx, username, password, key_field)
+	accountid := account.AccountID.ValueString()
+	data, code, message := get_account(ctx, accountid)
 	if code != 200 {
 		resp.Diagnostics.AddError(fmt.Sprintf("%d - %s", code, message), "")
 		return

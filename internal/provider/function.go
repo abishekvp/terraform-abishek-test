@@ -12,13 +12,13 @@ import (
 
 func api_call(params map[string]string) ([]byte, error) {
 	client := &http.Client{}
-	url := AccountPassword + "/api/get_key_field_value"
+	url := ServerURL + "/api/get_account_detail_data_dict"
 
 	api_request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
-	api_request.Header.Set("username", AccountUsername)
+	api_request.Header.Set("authtoken", Authtoken)
 
 	q := api_request.URL.Query()
 	for key, value := range params {
@@ -37,18 +37,13 @@ func api_call(params map[string]string) ([]byte, error) {
 	return body, err
 }
 
-func get_account(ctx context.Context, username, password, key_field string) (SecurdenDataSourceModel, int, string) {
+func get_account(ctx context.Context, username string) (SecurdenDataSourceModel, int, string) {
 	var account SecurdenDataSourceModel
 	params := map[string]string{
-		"username":  username,
-		"password":  password,
-		"key_field": key_field,
+		"username": username,
 	}
 	var Response struct {
-		Username   string `json:"username"`
 		Password   string `json:"password"`
-		KeyField   string `json:"key_field"`
-		KeyValue   string `json:"key_value"`
 		Message    string `json:"message"`
 		StatusCode int    `json:"status_code"`
 		Error      struct {
@@ -67,9 +62,6 @@ func get_account(ctx context.Context, username, password, key_field string) (Sec
 		}
 		return account, Response.StatusCode, Response.Message
 	}
-	account.Username = types.StringValue(Response.Username)
 	account.Password = types.StringValue(Response.Password)
-	account.KeyField = types.StringValue(Response.KeyField)
-	account.KeyValue = types.StringValue(Response.KeyValue)
 	return account, Response.StatusCode, Response.Message
 }

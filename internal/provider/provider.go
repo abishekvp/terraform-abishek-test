@@ -19,12 +19,14 @@ type securdenProvider struct {
 	version string
 }
 
-var AccountUsername string
-var AccountPassword string
+var AccountID string
+var ServerURL string
+var Authtoken string
 
 type securdenProviderModel struct {
-	Username types.String `tfsdk:"username"`
-	Password types.String `tfsdk:"password"`
+	AccountID types.String `tfsdk:"account_id"`
+	ServerURL types.String `tfsdk:"server_url"`
+	Authtoken types.String `tfsdk:"authtoken"`
 }
 
 func (p *securdenProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -35,11 +37,15 @@ func (p *securdenProvider) Metadata(_ context.Context, _ provider.MetadataReques
 func (p *securdenProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"username": schema.StringAttribute{
+			"account_id": schema.StringAttribute{
 				Required:  true,
 				Sensitive: true,
 			},
-			"password": schema.StringAttribute{
+			"authtoken": schema.StringAttribute{
+				Required:  true,
+				Sensitive: true,
+			},
+			"server_url": schema.StringAttribute{
 				Required: true,
 			},
 		},
@@ -51,8 +57,9 @@ func (p *securdenProvider) Configure(ctx context.Context, req provider.Configure
 	var config securdenProviderModel
 	diags := req.Config.Get(ctx, &config)
 	resp.Diagnostics.Append(diags...)
-	AccountUsername = config.Username.ValueString()
-	AccountPassword = config.Password.ValueString()
+	AccountID = config.AccountID.ValueString()
+	ServerURL = config.ServerURL.ValueString()
+	Authtoken = config.Authtoken.ValueString()
 }
 
 func (p *securdenProvider) Resources(_ context.Context) []func() resource.Resource {
